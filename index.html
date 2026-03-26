@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SkyCast | Premium Weather Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.8.0/suncalc.min.js"></script>
     
     <style>
         :root {
@@ -132,6 +133,26 @@
         .hourly-wrapper::-webkit-scrollbar { display: none; }
         .hourly-card { min-width: 80px; text-align: center; padding: 15px 10px; background: var(--header-footer-bg); border-radius: 20px; flex-shrink: 0; }
         .hourly-card i { font-size: 1.5rem; color: var(--accent); margin: 8px 0; }
+        
+        /* SUNSET & SUNRISE SPECIFIC STYLING */
+        .hourly-card.sunset {
+            background: #fff0e8;
+            border: 1px solid #ffbca8;
+            padding: 10px 10px; 
+        }
+        .hourly-card.sunrise {
+            background: #fff8e1;
+            border: 1px solid #ffe082;
+            padding: 10px 10px;
+        }
+        body.dark-mode .hourly-card.sunset {
+            background: rgba(255, 107, 0, 0.15);
+            border: 1px solid rgba(255, 107, 0, 0.3);
+        }
+        body.dark-mode .hourly-card.sunrise {
+            background: rgba(255, 193, 7, 0.15);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+        }
 
         /* Forecast Card */
         .forecast-card { display: flex; flex-direction: column; padding: 1.5rem; height: 100%;}
@@ -177,6 +198,7 @@
         .run-hour span:first-child { font-size: 0.85rem; color: var(--text-color); } 
         .run-txt { font-size: 0.95rem; font-weight: 800; }
         
+        /* Perfected Emoji Styling */
         .emoji-circle {
             width: 35px;
             height: 35px;
@@ -184,8 +206,12 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            color: white; 
+            background: #ffffff; 
             font-size: 1.7rem;
+            margin: 2px 0;
+        }
+        body.dark-mode .emoji-circle {
+            background: var(--nav-bg); 
         }
 
         /* --- ADVANCED METRICS GRID --- */
@@ -222,14 +248,53 @@
         .sun-path-container { position: relative; width: 100%; height: 90px; margin-top: 15px;}
         .times-row { display: flex; justify-content: space-between; color: var(--text-color); font-weight: bold; font-size: 0.95rem; margin-top: 5px;}
         
-        /* PERFECT MOON PHASE VISUAL CSS */
+        /* PERFECT MOON PHASE VISUAL CSS & RESPONSIVENESS */
+        .moon-card-responsive {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .moon-info-left {
+            display: flex;
+            flex-direction: column;
+        }
+        .moon-times {
+            display: flex;
+            gap: 15px;
+            margin-top: 8px;
+        }
+        .time-block {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-color);
+            background: var(--header-footer-bg);
+            padding: 5px 10px;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+        }
+        .moon-visual-right {
+            display: flex; 
+            gap: 15px; 
+            margin-left: auto; 
+            align-items: center; 
+            flex-shrink: 0;
+        }
+
+        /* FLAWLESS CIRCLE CSS - No more black edges or clipping! */
         .moon-visual { 
             width: 80px; height: 80px; border-radius: 50%; 
             background: url('https://upload.wikimedia.org/wikipedia/commons/e/e1/FullMoon2010.jpg') center/cover no-repeat; 
-            position: relative; flex-shrink: 0; margin-left: auto; overflow: hidden;
-            border: 2px solid rgba(255,255,255,0.1);
+            position: relative; flex-shrink: 0; overflow: hidden;
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.2); 
+            background-color: #000;
         }
-        .moon-shadow-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; }
+        .moon-shadow-svg { 
+            position: absolute; top: 0; left: 0; 
+            width: 100%; height: 100%; 
+            z-index: 2; 
+        }
 
         .rain-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: url('https://www.transparenttextures.com/patterns/rain.png'); opacity: 0; pointer-events: none; transition: 0.5s; z-index: -1; }
         @keyframes rainMove { from { background-position: 0% 0%; } to { background-position: 20% 100%; } }
@@ -273,6 +338,19 @@
             nav ul { display: none; flex-direction: column; background: var(--nav-bg); backdrop-filter: blur(10px); padding: 20px; gap: 15px; text-align: center; border-bottom: 1px solid var(--glass-border); box-shadow: var(--card-shadow); }
             nav ul.active { display: flex; }
             .dual-map-container { flex-direction: column; }
+            
+            /* Tablet Moon Card Fixes */
+            .moon-card-responsive {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            .moon-visual-right {
+                margin-left: 0;
+                width: 100%;
+                justify-content: flex-start;
+                gap: 25px;
+            }
         }
 
         @media (max-width: 480px) {
@@ -297,6 +375,19 @@
             .running-info { text-align: left; }
             .running-desc { max-width: 100%; }
             .running-hourly { width: 100%; justify-content: space-between; }
+
+            /* Moon Card Mobile Fixes */
+            .moon-card-responsive {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            .moon-visual-right {
+                margin-left: 0;
+                width: 100%;
+                justify-content: center;
+                gap: 25px;
+            }
         }
     </style>
 </head>
@@ -435,17 +526,27 @@
                 </div>
             </div>
 
-            <div class="metric-card span-2" style="flex-direction:row; align-items:center;">
-                <div>
+            <div class="metric-card span-2 moon-card-responsive">
+                <div class="moon-info-left">
                     <div class="metric-header"><i class="fas fa-moon"></i> Moon Phase</div>
-                    <div class="metric-value" id="moonPhaseName" style="font-size:1.6rem;">Calculating...</div>
+                    <div class="metric-value" id="moonPhaseName" style="font-size:1.6rem; margin-bottom: 5px;">Calculating...</div>
+                    <div class="moon-times">
+                        <div class="time-block" title="Moonrise">
+                            <i class="fas fa-arrow-up" style="color: var(--accent); font-size: 0.8rem;"></i>
+                            <span id="moonriseTime" style="font-size: 0.95rem; font-weight: 600;">--:--</span>
+                        </div>
+                        <div class="time-block" title="Moonset">
+                            <i class="fas fa-arrow-down" style="color: var(--text-secondary); font-size: 0.8rem;"></i>
+                            <span id="moonsetTime" style="font-size: 0.95rem; font-weight: 600;">--:--</span>
+                        </div>
+                    </div>
                 </div>
                 
-                <div style="display: flex; gap: 15px; margin-left: auto; align-items: center; flex-shrink: 0;">
+                <div class="moon-visual-right">
                     <span id="moonEmoji" style="font-size: 2.5rem; animation: pulse 2s infinite alternate;">🌑</span>
                     <div class="moon-visual" id="moonVisual">
                         <svg class="moon-shadow-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
-                            <path id="moonShadowPath" fill="rgba(0, 0, 0, 0.88)" d=""></path>
+                            <path id="moonShadowPath" fill="rgba(0, 0, 0, 0.85)" d=""></path>
                         </svg>
                     </div>
                 </div>
@@ -461,7 +562,7 @@
             
             <div class="dual-map-container">
                 <div class="map-flex-item">
-                    <h4>Live Weather Radar (Use menu to switch to Temperature)</h4>
+                    <h4>Live Weather Radar (Use menu to switch layers)</h4>
                     <iframe id="mainMapFrame" width="100%" height="100%" frameborder="0" src="" style="flex: 1;"></iframe>
                 </div>
                 <div class="map-flex-item">
@@ -521,7 +622,6 @@
             const authBtn = document.getElementById('authBtn');
             const user = JSON.parse(localStorage.getItem('user')); 
             
-            // This hides the user ID/Name and strictly shows the person icon and 'Logout' text
             authBtn.innerHTML = (user && user.name) ? `<i class="fas fa-user"></i> Logout` : `<i class="fas fa-sign-in-alt"></i> Login`;
         }
 
@@ -565,41 +665,66 @@
             return { text: "Extreme", pct: 100 };
         }
 
+        // --- COMPLETELY REWRITTEN FLAWLESS SVG MOON ALGORITHM ---
         function getMoonPhase() {
-            const date = new Date();
-            let year = date.getFullYear(), month = date.getMonth() + 1, day = date.getDate();
-            if (month < 3) { year--; month += 12; }
-            ++month;
-            let jd = 365.25 * year + 30.6 * month + day - 694039.09;
-            jd /= 29.5305882; 
-            let b = parseInt(jd); jd -= b; 
-            let phaseNum = Math.round(jd * 8); if (phaseNum >= 8) phaseNum = 0;
+            const moonData = SunCalc.getMoonIllumination(new Date());
+            const phase = moonData.phase; // 0.0 to 1.0 (0=New, 0.5=Full)
+            const fraction = moonData.fraction; // 0.0 to 1.0 (Illumination percentage)
+            
+            let phaseNum;
+            if (fraction <= 0.03) {
+                phaseNum = 0; // New Moon
+            } else if (fraction >= 0.97) {
+                phaseNum = 4; // Full Moon
+            } else if (phase < 0.5) {
+                if (fraction < 0.45) phaseNum = 1; // Waxing Crescent
+                else if (fraction <= 0.55) phaseNum = 2; // First Quarter
+                else phaseNum = 3; // Waxing Gibbous
+            } else {
+                if (fraction > 0.55) phaseNum = 5; // Waning Gibbous
+                else if (fraction >= 0.45) phaseNum = 6; // Last Quarter
+                else phaseNum = 7; // Waning Crescent
+            }
             
             const phases = ['New Moon', 'Waxing Crescent', 'First Quarter', 'Waxing Gibbous', 'Full Moon', 'Waning Gibbous', 'Last Quarter', 'Waning Crescent'];
             const emojiPhases = ['🌑', '🌒', '🌓', '🌔', '🌕', '🌖', '🌗', '🌘'];
             
-            const shadowPath = document.getElementById('moonShadowPath');
-            
-            if (phaseNum === 0) {
-                shadowPath.setAttribute('d', 'M 0,0 L 100,0 L 100,100 L 0,100 Z');
-            } else if (phaseNum === 1) {
-                shadowPath.setAttribute('d', 'M 50,0 L 0,0 L 0,100 L 50,100 A 25,50 0 0,0 50,0 Z');
-            } else if (phaseNum === 2) {
-                shadowPath.setAttribute('d', 'M 50,0 L 0,0 L 0,100 L 50,100 Z');
-            } else if (phaseNum === 3) {
-                shadowPath.setAttribute('d', 'M 50,0 L 0,0 L 0,100 L 50,100 A 25,50 0 0,1 50,0 Z');
-            } else if (phaseNum === 4) {
-                shadowPath.setAttribute('d', '');
-            } else if (phaseNum === 5) {
-                shadowPath.setAttribute('d', 'M 50,0 L 100,0 L 100,100 L 50,100 A 25,50 0 0,0 50,0 Z');
-            } else if (phaseNum === 6) {
-                shadowPath.setAttribute('d', 'M 50,0 L 100,0 L 100,100 L 50,100 Z');
-            } else if (phaseNum === 7) {
-                shadowPath.setAttribute('d', 'M 50,0 L 100,0 L 100,100 L 50,100 A 25,50 0 0,1 50,0 Z');
-            }
-
             document.getElementById('moonPhaseName').innerText = phases[phaseNum];
             document.getElementById('moonEmoji').innerText = emojiPhases[phaseNum];
+            
+            const shadowPath = document.getElementById('moonShadowPath');
+            let d = "";
+
+            if (fraction >= 0.98) {
+                d = ""; // Full Moon - no shadow needed
+            } else if (fraction <= 0.02) {
+                d = "M 0,0 L 100,0 L 100,100 L 0,100 Z"; // New Moon - fully covered
+            } else {
+                // Calculate curve radius correctly based on fraction
+                const rx = Math.abs(0.5 - fraction) * 100;
+                
+                if (phase < 0.5) {
+                    // WAXING (Lit on the right side)
+                    if (fraction <= 0.5) {
+                        // Crescent: Shadow covers left half AND bows into right hemisphere
+                        d = `M 50,0 A 50,50 0 0,0 50,100 A ${rx},50 0 0,0 50,0 Z`;
+                    } else {
+                        // Gibbous: Shadow covers only far left edge (bows into left hemisphere)
+                        d = `M 50,0 A 50,50 0 0,0 50,100 A ${rx},50 0 0,1 50,0 Z`;
+                    }
+                } else {
+                    // WANING (Lit on the left side)
+                    if (fraction <= 0.5) {
+                        // Crescent: Shadow covers right half AND bows into left hemisphere
+                        d = `M 50,0 A 50,50 0 0,1 50,100 A ${rx},50 0 0,1 50,0 Z`;
+                    } else {
+                        // Gibbous: Shadow covers only far right edge (bows into right hemisphere)
+                        d = `M 50,0 A 50,50 0 0,1 50,100 A ${rx},50 0 0,0 50,0 Z`;
+                    }
+                }
+            }
+
+            shadowPath.setAttribute('d', d);
         }
 
         function updateSunPath(sunriseStr, sunsetStr) {
@@ -652,10 +777,14 @@
             }
         }
 
+        // --- SMART LOCATION DETECTION ---
         function getUserLocation() {
             document.getElementById('cityName').innerText = "Finding location...";
+            
             if (navigator.geolocation) {
-                const options = { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 };
+                // FIX 1: enableHighAccuracy is now false. This stops phones from hanging indoors.
+                const options = { enableHighAccuracy: false, timeout: 15000, maximumAge: 60000 };
+                
                 navigator.geolocation.getCurrentPosition(
                     async (position) => {
                         const lat = position.coords.latitude;
@@ -664,20 +793,45 @@
                         fetchWeather(lat, lon, name);
                     },
                     (error) => {
-                        console.warn(`ERROR(${error.code}): ${error.message}`);
-                        alert("Could not get exact GPS location. Showing default.");
-                        fetchWeather(28.6139, 77.2090, "New Delhi"); 
+                        console.warn(`GPS Error (${error.code}): ${error.message}`);
+                        // FIX 2: If GPS fails or is blocked, trigger the silent IP fallback
+                        fallbackToIP();
                     },
                     options
                 );
-            } else { alert("Geolocation is not supported by your browser."); }
+            } else { 
+                fallbackToIP(); 
+            }
+        }
+
+        // FIX 3: The Silent IP Fallback Network
+        async function fallbackToIP() {
+            try {
+                document.getElementById('cityName').innerText = "Using IP Location...";
+                // Free, no-key IP geolocation API
+                const res = await fetch('https://get.geojs.io/v1/ip/geo.json');
+                const data = await res.json();
+                
+                const lat = parseFloat(data.latitude);
+                const lon = parseFloat(data.longitude);
+                const city = data.city || data.region || "My Location";
+                
+                fetchWeather(lat, lon, city);
+            } catch (e) {
+                console.error("IP Fallback failed:", e);
+                // Final safety net if absolutely everything fails
+                alert("Could not detect location automatically. Showing default.");
+                fetchWeather(28.6139, 77.2090, "New Delhi"); 
+            }
         }
 
         async function fetchWeather(lat, lon, name) {
             document.getElementById('cityName').innerText = name;
             
             document.getElementById('mainMapFrame').src = `https://www.meteoblue.com/en/weather/maps/widget?windAnimation=1&gust=0&satellite=0&cloudsAndPrecipitation=1&temperature=1&sunshine=0&extremeForecastIndex=0&geoloc=fixed&tempunit=C&windunit=km%252Fh&lengthunit=metric&zoom=6&autowidth=auto&lat=${lat}&lon=${lon}`;
-            document.getElementById('googleMapFrame').src = `https://maps.google.com/maps?q=${lat},${lon}&z=14&output=embed`;
+            
+            // FIXED MAPS URL: Centered perfectly on coordinates with premium satellite view.
+            document.getElementById('googleMapFrame').src = `https://maps.google.com/maps?q=${lat},${lon}&t=h&z=14&output=embed`;
 
             try {
                 const [weatherRes, aqiRes] = await Promise.all([
@@ -727,9 +881,24 @@
                 document.getElementById('dewValue').innerText = `${Math.round(dewVal)}°C`;
                 document.getElementById('dewText').innerText = dewVal > 16 ? "Feels Muggy" : "The air is dry";
 
-                const visKm = current.visibility ? (current.visibility / 1000).toFixed(1) : "--";
-                document.getElementById('visValue').innerText = visKm + " km";
-                document.getElementById('visText').innerText = visKm > 10 ? "Unlimited visibility" : "Restricted visibility";
+                // FULLY UPDATED GRANULAR VISIBILITY LOGIC
+                const rawVisKm = current.visibility ? (current.visibility / 1000).toFixed(1) : "--";
+                let displayVis = rawVisKm;
+                let visDesc = "--";
+
+                if (rawVisKm !== "--") {
+                    const v = parseFloat(rawVisKm);
+                    if (v >= 24) displayVis = "24+";
+
+                    if (v >= 15) visDesc = "Perfectly clear view";
+                    else if (v >= 10) visDesc = "Excellent visibility";
+                    else if (v >= 5) visDesc = "Good visibility";
+                    else if (v >= 2) visDesc = "Moderate visibility";
+                    else visDesc = "Poor visibility (Fog/Haze)";
+                }
+
+                document.getElementById('visValue').innerText = displayVis + " km";
+                document.getElementById('visText').innerText = visDesc;
 
                 const pressure = current.surface_pressure || 1013;
                 document.getElementById('pressureValue').innerHTML = `${Math.round(pressure)}<span style="font-size:1rem; font-weight:normal;">hPa</span>`;
@@ -744,6 +913,22 @@
                 if(daily && daily.sunrise && daily.sunset) {
                     updateSunPath(daily.sunrise[1], daily.sunset[1]);
                 }
+                
+                try {
+                    const moonTimes = SunCalc.getMoonTimes(new Date(), lat, lon);
+                    let mRise = "--:--", mSet = "--:--";
+                    if (moonTimes.rise) {
+                        mRise = moonTimes.rise.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    }
+                    if (moonTimes.set) {
+                        mSet = moonTimes.set.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    }
+                    document.getElementById('moonriseTime').innerText = mRise;
+                    document.getElementById('moonsetTime').innerText = mSet;
+                } catch (err) {
+                    console.warn("Could not calculate moon times offline.", err);
+                }
+
                 getMoonPhase();
 
                 const forecastList = document.getElementById('forecastList');
@@ -837,16 +1022,16 @@
                         const hrTemp = hourly.temperature_2m[i];
                         const hrCode = hourly.weather_code[i];
                         
-                        let nativeEmoji = "🥵"; 
+                        let iconClass = "fa-face-frown";
                         let txt = "Poor";
                         let color = "#ef4444";
 
                         if (hrCode <= 3 && hrTemp >= 5 && hrTemp <= 32 && (currentAqi === null || currentAqi <= 100)) {
-                            nativeEmoji = "😊";
+                            iconClass = "fa-face-smile";
                             txt = "Good";
                             color = "#10b981";
                         } else if (hrCode <= 61 && hrTemp >= 0 && hrTemp <= 38 && (currentAqi === null || currentAqi <= 200)) {
-                            nativeEmoji = "😑";
+                            iconClass = "fa-face-meh";
                             txt = "Fair";
                             color = "#fbbf24";
                         }
@@ -854,7 +1039,9 @@
                         runHourlyGrid.innerHTML += `
                             <div class="run-hour">
                                 <span>${hours}:00 ${ampm}</span>
-                                <span style="font-size: 2.2rem; margin: 4px 0; line-height: 1;">${nativeEmoji}</span>
+                                <div class="emoji-circle">
+                                    <i class="fa-solid ${iconClass}" style="color: ${color};"></i>
+                                </div>
                                 <span class="run-txt" style="color: ${color}">${txt}</span>
                             </div>
                         `;
@@ -890,11 +1077,14 @@
                                 if (srTime >= currentHourTime && srTime < nextHourTime) {
                                     const srStr = new Date(srTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                                     hourlyList.innerHTML += `
-                                        <div class="hourly-card" style="background: rgba(255, 193, 7, 0.15); border: 1px solid rgba(255, 193, 7, 0.4);">
-                                            <small>${srStr}</small><br>
-                                            <i class="fas fa-sun" style="color: #ffc107;"></i><br>
-                                            <strong>Sunrise</strong><br>
-                                            <small style="font-size:0.7rem">--</small>
+                                        <div class="hourly-card sunrise">
+                                            <small style="font-weight: 500;">${srStr}</small><br>
+                                            <svg width="50" height="40" viewBox="0 0 50 40" style="margin: 8px 0 4px 0;">
+                                                <path d="M 10 25 A 15 15 0 0 1 40 25 Z" fill="#FFC107" opacity="0.3"/>
+                                                <path d="M 15 25 A 10 10 0 0 1 35 25 Z" fill="#FFC107"/>
+                                                <path d="M 5 25 L 21 25 L 25 30 L 29 25 L 45 25" stroke="var(--text-color)" stroke-width="3" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+                                            </svg><br>
+                                            <strong style="font-size: 1.1rem;">Sunrise</strong><br>
                                         </div>
                                     `;
                                 }
@@ -904,11 +1094,14 @@
                                 if (ssTime >= currentHourTime && ssTime < nextHourTime) {
                                     const ssStr = new Date(ssTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                                     hourlyList.innerHTML += `
-                                        <div class="hourly-card" style="background: rgba(255, 87, 34, 0.15); border: 1px solid rgba(255, 87, 34, 0.4);">
-                                            <small>${ssStr}</small><br>
-                                            <i class="fas fa-moon" style="color: #ff9800;"></i><br>
-                                            <strong>Sunset</strong><br>
-                                            <small style="font-size:0.7rem">--</small>
+                                        <div class="hourly-card sunset">
+                                            <small style="font-weight: 500;">${ssStr}</small><br>
+                                            <svg width="50" height="40" viewBox="0 0 50 40" style="margin: 8px 0 4px 0;">
+                                                <path d="M 10 25 A 15 15 0 0 1 40 25 Z" fill="#F87171" opacity="0.3"/>
+                                                <path d="M 15 25 A 10 10 0 0 1 35 25 Z" fill="#F87171"/>
+                                                <path d="M 5 25 L 21 25 L 25 30 L 29 25 L 45 25" stroke="var(--text-color)" stroke-width="3" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+                                            </svg><br>
+                                            <strong style="font-size: 1.1rem;">Sunset</strong><br>
                                         </div>
                                     `;
                                 }
