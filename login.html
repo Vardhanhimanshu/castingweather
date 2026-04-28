@@ -128,7 +128,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 40px 15px; 
+            padding: 40px 15px; /* Adjust padding for mobile edges */
         }
 
         .auth-card {
@@ -263,7 +263,7 @@
             to { opacity: 1; transform: scale(1); }
         }
 
-        /* --- FOOTER (MODIFIED FOR LEFT ALIGN) --- */
+        /* --- FOOTER --- */
         footer {
             background: rgba(0, 0, 0, 0.4);
             padding: 40px 5%;
@@ -271,29 +271,6 @@
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 30px;
             margin-top: auto;
-        }
-
-        .social-column {
-            text-align: left; /* Left align text */
-        }
-
-        .social-column h3 {
-            margin-bottom: 15px;
-            color: var(--text-secondary);
-        }
-
-        .footer-social-icons {
-            display: flex;
-            gap: 15px;
-            margin-top: 15px;
-            justify-content: flex-start; /* Left align icons */
-        }
-
-        .copyright-text {
-            margin-top: 15px;
-            font-size: 0.8rem;
-            opacity: 0.6;
-            text-align: left; /* Left align copyright */
         }
 
         .map-container {
@@ -321,7 +298,7 @@
             }
 
             nav ul {
-                display: none;
+                display: none; /* Hidden by default */
                 flex-direction: column;
                 background: rgba(0, 0, 0, 0.95);
                 backdrop-filter: blur(10px);
@@ -331,16 +308,14 @@
                 border-bottom: 1px solid var(--glass-border);
             }
 
-            nav ul.active { display: flex; }
+            nav ul.active { display: flex; } /* Shown when hamburger is clicked */
             
             .login-btn { display: block; width: fit-content; margin: 0 auto; }
 
             .auth-card { padding: 30px 20px; }
             
             footer { grid-template-columns: 1fr; text-align: center; }
-            .social-column { text-align: center; }
-            .footer-social-icons { justify-content: center; }
-            .copyright-text { text-align: center; }
+            .social-icons-row, .social-column div { justify-content: center; }
         }
     </style>
 </head>
@@ -414,16 +389,16 @@
     <footer>
         <div class="social-column">
             <h3>Connect With Us</h3>
-            <div class="footer-social-icons">
+            <div style="display: flex; gap: 15px; margin-top: 15px; justify-content: center;">
                 <a href="facebook.html" class="social-btn" style="width:35px; height:35px;"><i class="fab fa-facebook-f"></i></a>
                 <a href="instagram.html" class="social-btn" style="width:35px; height:35px;"><i class="fab fa-instagram"></i></a>
                 <a href="gmail.html" class="social-btn" style="width:35px; height:35px;"><i class="fas fa-envelope"></i></a>
             </div>
-            <p class="copyright-text">© 2026 SkyCast Weather Systems</p>
+            <p style="margin-top: 15px; font-size: 0.8rem; opacity: 0.6; text-align: center;">© 2026 SkyCast Weather Systems</p>
         </div>
 
         <div class="map-column">
-            <h3 style="margin-bottom: 10px;">Your Region</h3>
+            <h3 style="text-align: center; margin-bottom: 10px;">Your Region</h3>
             <div class="map-container">
                 <iframe id="footer-map" src=""></iframe>
             </div>
@@ -442,6 +417,7 @@
     const nameField = document.getElementById('nameField');
     const submitBtn = document.getElementById('submitBtn');
     
+    // Track which mode we are in (Login vs Signup)
     let isLoginMode = true; 
 
     signupTab.addEventListener('click', () => {
@@ -449,7 +425,7 @@
         loginTab.classList.remove('active');
         nameField.style.display = 'block';
         submitBtn.innerText = 'Create Account';
-        isLoginMode = false; 
+        isLoginMode = false; // We are now in Signup mode
     });
 
     loginTab.addEventListener('click', () => {
@@ -457,24 +433,38 @@
         signupTab.classList.remove('active');
         nameField.style.display = 'none';
         submitBtn.innerText = 'Login';
-        isLoginMode = true; 
+        isLoginMode = true; // We are now in Login mode
     });
 
-    // --- 2. HANDLE FORM SUBMISSION ---
+    // --- 2. HANDLE FORM SUBMISSION (OFFLINE/LOCAL MODE) ---
     document.getElementById('authForm').addEventListener('submit', (e) => {
-        e.preventDefault(); 
+        e.preventDefault(); // Stop page refresh
+
+        // Collect Data from inputs
         const inputs = document.querySelectorAll('input');
+        // inputs[0] is Name (hidden in login), inputs[1] is Email, inputs[2] is Password
         const name = inputs[0].value || "User";    
         const email = inputs[1].value;   
 
+        // Simulate a successful login/signup instantly without a backend
         if (isLoginMode) {
+            // For login, extract a display name from the email (e.g. john@mail.com -> john)
             const displayName = email.split('@')[0];
             const fakeUser = { name: displayName, email: email };
+            
+            // Save to browser storage so index.html knows you are logged in
             localStorage.setItem('user', JSON.stringify(fakeUser));
+            
+            // Redirect to home page
             window.location.href = 'index.html'; 
         } else {
+            // For signup, use the entered name
             const fakeUser = { name: name, email: email };
+            
+            // Save to browser storage
             localStorage.setItem('user', JSON.stringify(fakeUser));
+            
+            // Redirect to home page
             window.location.href = 'index.html';
         }
     });
@@ -485,7 +475,7 @@
             navigator.geolocation.getCurrentPosition((pos) => {
                 const lat = pos.coords.latitude;
                 const lon = pos.coords.longitude;
-                // Corrected template literal logic
+                // Fixed the missing $ in the template literal to make the map render properly
                 document.getElementById('footer-map').src = `https://maps.google.com/maps?q=${lat},${lon}&t=&z=13&ie=UTF8&iwloc=&output=embed`;
             });
         }

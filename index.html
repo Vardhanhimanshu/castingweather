@@ -131,9 +131,8 @@
         .hourly-section h3 { font-size: 1.1rem; color: var(--text-color); margin-bottom: 15px; font-weight: 700;}
         .hourly-wrapper { display: flex; overflow-x: auto; gap: 15px; padding-bottom: 10px; scrollbar-width: none; }
         .hourly-wrapper::-webkit-scrollbar { display: none; }
-        .hourly-card { min-width: 80px; text-align: center; padding: 15px 10px; background: var(--header-footer-bg); border-radius: 20px; flex-shrink: 0; }
+        .hourly-card { min-width: 90px; text-align: center; padding: 15px 10px; background: var(--header-footer-bg); border-radius: 20px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: space-between;}
         
-        /* SUNSET & SUNRISE SPECIFIC STYLING */
         .hourly-card.sunset { background: #fff0e8; border: 1px solid #ffbca8; padding: 10px 10px; }
         .hourly-card.sunrise { background: #fff8e1; border: 1px solid #ffe082; padding: 10px 10px; }
         body.dark-mode .hourly-card.sunset { background: rgba(255, 107, 0, 0.15); border: 1px solid rgba(255, 107, 0, 0.3); }
@@ -257,18 +256,20 @@
             .city-title { font-size: 2rem; }
             .advanced-grid { grid-template-columns: 1fr; } 
             .metric-card.span-2 { grid-column: span 1; }
-            
-            /* Responsive adjustments for the new stacked icons */
             .forecast-row { grid-template-columns: 2.2fr 1.5fr 1.5fr 2fr; font-size: 0.95rem; padding: 10px 0;}
             .rain-chance { font-size: 0.8rem; }
-            .forecast-icons { gap: 5px; }
-            
             .temps { font-size: 0.95rem; }
             .min-temp { margin-left: 6px; }
-            .running-card { flex-direction: column; align-items: flex-start; gap: 20px; }
+            
+            /* Enhanced Mobile Running Card Rules */
+            .running-card { flex-direction: column; align-items: flex-start; gap: 20px; padding: 15px; }
             .running-info { text-align: left; }
-            .running-desc { max-width: 100%; }
-            .running-hourly { width: 100%; justify-content: space-between; }
+            .running-desc { max-width: 100%; font-size: 0.8rem; }
+            .running-hourly { width: 100%; justify-content: space-between; gap: 10px; }
+            .run-hour span:first-child { font-size: 0.75rem; }
+            .emoji-circle { width: 30px; height: 30px; font-size: 1.4rem; }
+            .run-txt { font-size: 0.85rem; }
+            
             .moon-card-responsive { flex-direction: column; align-items: flex-start; gap: 15px; }
             .moon-visual-right { margin-left: 0; width: 100%; justify-content: center; gap: 25px; }
         }
@@ -312,11 +313,9 @@
                 <div class="base-card current-weather">
                     <div class="rain-layer" id="rainLayer"></div>
                     <h1 id="cityName" class="city-title">Detecting...</h1>
-                    
-                    <div id="weatherIcon" style="font-size: 6rem; margin: 10px 0;">
+                    <div id="weatherIcon" style="font-size: 5.5rem; margin: 15px 0;">
                         <i class="fas fa-satellite-dish fa-spin" style="color: var(--accent);"></i>
                     </div>
-                    
                     <div class="temp-display"><span id="currTemp">--</span>°</div>
                     <p id="currDesc" class="condition">Locating coordinates...</p>
                 </div>
@@ -471,67 +470,67 @@
     </footer>
 
     <script>
+        // FULLY EXPANDED WMO WEATHER CODES
         const weatherMap = {
             0: "Clear Sky", 1: "Mainly Clear", 2: "Partly Cloudy", 3: "Cloudy",
-            45: "Foggy", 61: "Rainy", 71: "Rainy", 95: "Thunderstorm"
+            45: "Foggy", 48: "Depositing Rime Fog",
+            51: "Light Drizzle", 53: "Moderate Drizzle", 55: "Dense Drizzle",
+            56: "Light Freezing Drizzle", 57: "Dense Freezing Drizzle",
+            61: "Slight Rain", 63: "Moderate Rain", 65: "Heavy Rain",
+            66: "Light Freezing Rain", 67: "Heavy Freezing Rain",
+            71: "Slight Snow", 73: "Moderate Snow", 75: "Heavy Snow",
+            77: "Snow Grains",
+            80: "Slight Rain Showers", 81: "Moderate Rain Showers", 82: "Violent Rain Showers",
+            85: "Slight Snow Showers", 86: "Heavy Snow Showers",
+            95: "Thunderstorm", 96: "Thunderstorm with Hail", 99: "Heavy Thunderstorm with Hail"
         };
-
-        // --- NEW: DYNAMIC MULTI-COLOR STACKED ICONS WITH LIGHTER CLOUDS ---
+        
         function getMultiColorIcon(code, isDay) {
-            
-            // Clear Sky
             if (code === 0) return isDay 
                 ? `<i class="fas fa-sun" style="color: #ffc107;"></i>` 
                 : `<i class="fas fa-moon" style="color: #cbd5e1;"></i>`;
             
-            // Partly Cloudy
             if (code === 1 || code === 2) return isDay
                 ? `<span class="fa-stack" style="width: 1em; height: 1em; line-height: 1em; font-size: inherit;">
-                     <i class="fas fa-sun fa-stack-1x" style="color: #f6ad55; transform: translate(-0.3em, -0.3em) scale(0.75);"></i>
-                     <i class="fas fa-cloud fa-stack-1x" style="color: #94a3b8; transform: translate(0.1em, 0.1em) scale(0.9);"></i>
+                     <i class="fas fa-sun fa-stack-1x" style="color: #ffc107; transform: translate(-0.3em, -0.3em) scale(0.75);"></i>
+                     <i class="fas fa-cloud fa-stack-1x" style="color: #e2e8f0; transform: translate(0.1em, 0.1em) scale(0.9);"></i>
                    </span>`
                 : `<span class="fa-stack" style="width: 1em; height: 1em; line-height: 1em; font-size: inherit;">
                      <i class="fas fa-moon fa-stack-1x" style="color: #cbd5e1; transform: translate(-0.3em, -0.3em) scale(0.75);"></i>
                      <i class="fas fa-cloud fa-stack-1x" style="color: #94a3b8; transform: translate(0.1em, 0.1em) scale(0.9);"></i>
                    </span>`;
                    
-            // Cloudy
             if (code === 3) return `<i class="fas fa-cloud" style="color: #94a3b8;"></i>`;
             
-            // Foggy
             if (code === 45 || code === 48) return `<i class="fas fa-smog" style="color: #9ca3af;"></i>`;
             
-            // Rainy
             if (code >= 51 && code <= 67) return `
                 <span class="fa-stack" style="width: 1em; height: 1em; line-height: 1em; font-size: inherit;">
                   <i class="fas fa-cloud fa-stack-1x" style="color: #94a3b8; transform: translateY(-0.1em);"></i>
-                  <i class="fas fa-droplet fa-stack-1x" style="color: #60a5fa; transform: translate(-0.3em, 0.4em) scale(0.35);"></i>
-                  <i class="fas fa-droplet fa-stack-1x" style="color: #60a5fa; transform: translate(0.3em, 0.4em) scale(0.35);"></i>
+                  <i class="fas fa-droplet fa-stack-1x" style="color: #3b82f6; transform: translate(-0.3em, 0.4em) scale(0.35);"></i>
+                  <i class="fas fa-droplet fa-stack-1x" style="color: #3b82f6; transform: translate(0.3em, 0.4em) scale(0.35);"></i>
                 </span>`;
                 
-            // Snow
             if (code >= 71 && code <= 77) return `
                 <span class="fa-stack" style="width: 1em; height: 1em; line-height: 1em; font-size: inherit;">
                   <i class="fas fa-cloud fa-stack-1x" style="color: #94a3b8; transform: translateY(-0.1em);"></i>
-                  <i class="fas fa-snowflake fa-stack-1x" style="color: #bae6fd; transform: translate(0, 0.4em) scale(0.5);"></i>
+                  <i class="fas fa-snowflake fa-stack-1x" style="color: #ffffff; transform: translate(0, 0.4em) scale(0.5);"></i>
                 </span>`;
                 
-            // Heavy Rain
             if (code >= 80 && code <= 82) return `
                 <span class="fa-stack" style="width: 1em; height: 1em; line-height: 1em; font-size: inherit;">
                   <i class="fas fa-cloud fa-stack-1x" style="color: #64748b; transform: translateY(-0.1em);"></i>
-                  <i class="fas fa-droplet fa-stack-1x" style="color: #60a5fa; transform: translate(-0.4em, 0.4em) scale(0.35);"></i>
-                  <i class="fas fa-droplet fa-stack-1x" style="color: #60a5fa; transform: translate(0, 0.45em) scale(0.35);"></i>
-                  <i class="fas fa-droplet fa-stack-1x" style="color: #60a5fa; transform: translate(0.4em, 0.4em) scale(0.35);"></i>
+                  <i class="fas fa-droplet fa-stack-1x" style="color: #3b82f6; transform: translate(-0.4em, 0.4em) scale(0.35);"></i>
+                  <i class="fas fa-droplet fa-stack-1x" style="color: #3b82f6; transform: translate(0, 0.45em) scale(0.35);"></i>
+                  <i class="fas fa-droplet fa-stack-1x" style="color: #3b82f6; transform: translate(0.4em, 0.4em) scale(0.35);"></i>
                 </span>`;
                 
-            // Thunderstorm
             if (code >= 95) return `
                 <span class="fa-stack" style="width: 1em; height: 1em; line-height: 1em; font-size: inherit;">
                   <i class="fas fa-cloud fa-stack-1x" style="color: #475569; transform: translateY(-0.1em);"></i>
-                  <i class="fas fa-bolt fa-stack-1x" style="color: #fbbf24; transform: translate(0, 0.3em) scale(0.5);"></i>
-                  <i class="fas fa-droplet fa-stack-1x" style="color: #60a5fa; transform: translate(-0.4em, 0.4em) scale(0.35);"></i>
-                  <i class="fas fa-droplet fa-stack-1x" style="color: #60a5fa; transform: translate(0.4em, 0.4em) scale(0.35);"></i>
+                  <i class="fas fa-bolt fa-stack-1x" style="color: #f59e0b; transform: translate(0, 0.3em) scale(0.5);"></i>
+                  <i class="fas fa-droplet fa-stack-1x" style="color: #3b82f6; transform: translate(-0.4em, 0.4em) scale(0.35);"></i>
+                  <i class="fas fa-droplet fa-stack-1x" style="color: #3b82f6; transform: translate(0.4em, 0.4em) scale(0.35);"></i>
                 </span>`;
                 
             return `<i class="fas fa-cloud" style="color: #94a3b8;"></i>`;
@@ -556,7 +555,6 @@
         function updateAuthUI() {
             const authBtn = document.getElementById('authBtn');
             const user = JSON.parse(localStorage.getItem('user')); 
-            
             authBtn.innerHTML = (user && user.name) ? `<i class="fas fa-user"></i> Logout` : `<i class="fas fa-sign-in-alt"></i> Login`;
         }
 
@@ -571,9 +569,7 @@
             try {
                 const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
                 const data = await res.json();
-                
                 let city = data.address.city || data.address.town || data.address.state_district || data.address.district || data.address.county || data.address.municipality || data.address.village || "My Location";
-                
                 return city.replace(" District", "");
             } catch (e) { return "My Location"; }
         }
@@ -606,11 +602,9 @@
             const fraction = moonData.fraction; 
             
             let phaseNum;
-            if (fraction <= 0.03) {
-                phaseNum = 0;
-            } else if (fraction >= 0.97) {
-                phaseNum = 4; 
-            } else if (phase < 0.5) {
+            if (fraction <= 0.03) { phaseNum = 0; } 
+            else if (fraction >= 0.97) { phaseNum = 4; } 
+            else if (phase < 0.5) {
                 if (fraction < 0.45) phaseNum = 1; 
                 else if (fraction <= 0.55) phaseNum = 2; 
                 else phaseNum = 3; 
@@ -629,28 +623,18 @@
             const shadowPath = document.getElementById('moonShadowPath');
             let d = "";
 
-            if (fraction >= 0.98) {
-                d = ""; 
-            } else if (fraction <= 0.02) {
-                d = "M 0,0 L 100,0 L 100,100 L 0,100 Z"; 
-            } else {
+            if (fraction >= 0.98) { d = ""; } 
+            else if (fraction <= 0.02) { d = "M 0,0 L 100,0 L 100,100 L 0,100 Z"; } 
+            else {
                 const rx = Math.abs(0.5 - fraction) * 100;
-                
                 if (phase < 0.5) {
-                    if (fraction <= 0.5) {
-                        d = `M 50,0 A 50,50 0 0,0 50,100 A ${rx},50 0 0,0 50,0 Z`;
-                    } else {
-                        d = `M 50,0 A 50,50 0 0,0 50,100 A ${rx},50 0 0,1 50,0 Z`;
-                    }
+                    if (fraction <= 0.5) { d = `M 50,0 A 50,50 0 0,0 50,100 A ${rx},50 0 0,0 50,0 Z`; } 
+                    else { d = `M 50,0 A 50,50 0 0,0 50,100 A ${rx},50 0 0,1 50,0 Z`; }
                 } else {
-                    if (fraction <= 0.5) {
-                        d = `M 50,0 A 50,50 0 0,1 50,100 A ${rx},50 0 0,1 50,0 Z`;
-                    } else {
-                        d = `M 50,0 A 50,50 0 0,1 50,100 A ${rx},50 0 0,0 50,0 Z`;
-                    }
+                    if (fraction <= 0.5) { d = `M 50,0 A 50,50 0 0,1 50,100 A ${rx},50 0 0,1 50,0 Z`; } 
+                    else { d = `M 50,0 A 50,50 0 0,1 50,100 A ${rx},50 0 0,0 50,0 Z`; }
                 }
             }
-
             shadowPath.setAttribute('d', d);
         }
 
@@ -659,9 +643,8 @@
             const sunrise = new Date(sunriseStr);
             const sunset = new Date(sunsetStr);
             let percentage = 0;
-            if (now > sunrise && now < sunset) {
-                percentage = (now - sunrise) / (sunset - sunrise);
-            } else if (now >= sunset) { percentage = 1; }
+            if (now > sunrise && now < sunset) { percentage = (now - sunrise) / (sunset - sunrise); } 
+            else if (now >= sunset) { percentage = 1; }
 
             const getCoords = (t) => {
                 const x = Math.pow(1-t, 2)*10 + 2*(1-t)*t*150 + Math.pow(t, 2)*290;
@@ -706,10 +689,8 @@
 
         function getUserLocation() {
             document.getElementById('cityName').innerText = "Finding location...";
-            
             if (navigator.geolocation) {
                 const options = { enableHighAccuracy: false, timeout: 15000, maximumAge: 60000 };
-                
                 navigator.geolocation.getCurrentPosition(
                     async (position) => {
                         const lat = position.coords.latitude;
@@ -723,9 +704,7 @@
                     },
                     options
                 );
-            } else { 
-                fallbackToIP(); 
-            }
+            } else { fallbackToIP(); }
         }
 
         async function fallbackToIP() {
@@ -733,35 +712,57 @@
                 document.getElementById('cityName').innerText = "Using IP Location...";
                 const res = await fetch('https://get.geojs.io/v1/ip/geo.json');
                 const data = await res.json();
-                
                 const lat = parseFloat(data.latitude);
                 const lon = parseFloat(data.longitude);
                 const city = data.city || data.region || "My Location";
-                
                 fetchWeather(lat, lon, city);
             } catch (e) {
                 console.error("IP Fallback failed:", e);
                 alert("Could not detect location automatically. Showing default.");
-                fetchWeather(28.6139, 77.2090, "New Delhi"); 
+                fetchWeather(31.1048, 77.1734, "Shimla"); 
             }
         }
 
         async function fetchWeather(lat, lon, name) {
             document.getElementById('cityName').innerText = name;
             
-            document.getElementById('mainMapFrame').src = `https://www.meteoblue.com/en/weather/maps/widget?windAnimation=1&gust=0&satellite=0&cloudsAndPrecipitation=1&temperature=1&sunshine=0&extremeForecastIndex=0&geoloc=fixed&tempunit=C&windunit=km%252Fh&lengthunit=metric&zoom=6&autowidth=auto&lat=${lat}&lon=${lon}`;
+            // ---> REPLACED METEOBLUE WITH WINDY MAP <---
+            document.getElementById('mainMapFrame').src = `https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=mm&metricTemp=°C&metricWind=km/h&zoom=6&overlay=rain&product=ecmwf&level=surface&lat=${lat}&lon=${lon}`;
             
             document.getElementById('googleMapFrame').src = `https://maps.google.com/maps?q=${lat},${lon}&t=h&z=14&output=embed`;
 
-            try {
-                const [weatherRes, aqiRes] = await Promise.all([
-                    fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,is_day,weather_code,surface_pressure,wind_speed_10m,wind_direction_10m,uv_index,dew_point_2m,visibility&hourly=temperature_2m,weather_code,is_day&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code,sunrise,sunset&past_days=1&timezone=auto`),
-                    fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=us_aqi&timezone=auto`) 
-                ]);
+            // --- CACHING SETUP ---
+            const cacheKey = `skycast_data_${lat}_${lon}`;
+            const cacheTimeKey = `skycast_time_${lat}_${lon}`;
+            const cacheExpiry = 30 * 60 * 1000; // 30 minutes in milliseconds
 
-                const weatherData = await weatherRes.json();
-                const aqiData = await aqiRes.json();
-                
+            try {
+                let weatherData, aqiData;
+                const now = new Date().getTime();
+                const cachedTime = localStorage.getItem(cacheTimeKey);
+
+                // --- CHECK CACHE FIRST ---
+                if (cachedTime && (now - cachedTime < cacheExpiry)) {
+                    console.log("SkyCast: Loading instant weather from local cache...");
+                    const cachedData = JSON.parse(localStorage.getItem(cacheKey));
+                    weatherData = cachedData.weatherData;
+                    aqiData = cachedData.aqiData;
+                } else {
+                    console.log("SkyCast: Fetching fresh high-res topographical data...");
+                    // Added &models=best_match for high-resolution accuracy
+                    const [weatherRes, aqiRes] = await Promise.all([
+                        fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,is_day,weather_code,surface_pressure,wind_speed_10m,wind_direction_10m,uv_index,dew_point_2m,visibility,precipitation&hourly=temperature_2m,weather_code,is_day,precipitation_probability&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code,sunrise,sunset&past_days=1&timezone=auto&models=best_match`),
+                        fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=us_aqi&timezone=auto`)
+                    ]);
+
+                    weatherData = await weatherRes.json();
+                    aqiData = await aqiRes.json();
+
+                    // Save new data to cache
+                    localStorage.setItem(cacheKey, JSON.stringify({ weatherData, aqiData }));
+                    localStorage.setItem(cacheTimeKey, now.toString());
+                }
+
                 const current = weatherData.current;
                 const daily = weatherData.daily;
                 const hourly = weatherData.hourly;
@@ -769,17 +770,26 @@
 
                 if (!current) throw new Error("API returned incomplete data.");
 
-                document.getElementById('currTemp').innerText = Math.round(current.temperature_2m);
-                document.getElementById('currDesc').innerText = weatherMap[current.weather_code] || "Cloudy";
+                // --- NEW LOGIC: OVERRIDE CLOUDY WITH RAIN IF PRECIPITATION DETECTED ---
+                const currentRain = current.precipitation || 0;
+                let effectiveCode = current.weather_code;
                 
-                // INJECT MULTI-COLOR MAIN ICON
-                document.getElementById('weatherIcon').innerHTML = getMultiColorIcon(current.weather_code, current.is_day);
+                // If it is raining > 0mm, but the code says clear/cloudy/fog (<= 48), force the code to 61 (Slight Rain)
+                if (currentRain > 0 && effectiveCode <= 48) {
+                    effectiveCode = 61; 
+                }
+
+                document.getElementById('currTemp').innerText = Math.round(current.temperature_2m);
+                document.getElementById('currDesc').innerText = weatherMap[effectiveCode] || "Cloudy";
+                
+                document.getElementById('weatherIcon').innerHTML = getMultiColorIcon(effectiveCode, current.is_day);
 
                 const rainLayer = document.getElementById('rainLayer');
                 if (rainLayer) {
-                    rainLayer.style.opacity = current.weather_code >= 61 ? "1" : "0";
-                    rainLayer.style.animation = current.weather_code >= 61 ? "rainMove 0.5s linear infinite" : "none";
+                    rainLayer.style.opacity = effectiveCode >= 61 ? "1" : "0";
+                    rainLayer.style.animation = effectiveCode >= 61 ? "rainMove 0.5s linear infinite" : "none";
                 }
+                // ----------------------------------------------------------------------
 
                 if (currentAqi !== null) {
                     const aqiInfo = getNAQI(currentAqi);
@@ -810,7 +820,6 @@
                 if (rawVisKm !== "--") {
                     const v = parseFloat(rawVisKm);
                     if (v >= 24) displayVis = "24+";
-
                     if (v >= 15) visDesc = "Perfectly clear view";
                     else if (v >= 10) visDesc = "Excellent visibility";
                     else if (v >= 5) visDesc = "Good visibility";
@@ -831,24 +840,16 @@
                 document.getElementById('windSpeed').innerHTML = `${Math.round(windSpd)}<span style="font-size:1rem; font-weight:normal;">km/h</span>`;
                 document.getElementById('windArrow').style.transform = `translateX(-50%) rotate(${current.wind_direction_10m || 0}deg)`;
 
-                if(daily && daily.sunrise && daily.sunset) {
-                    updateSunPath(daily.sunrise[1], daily.sunset[1]);
-                }
+                if(daily && daily.sunrise && daily.sunset) { updateSunPath(daily.sunrise[1], daily.sunset[1]); }
                 
                 try {
                     const moonTimes = SunCalc.getMoonTimes(new Date(), lat, lon);
                     let mRise = "--:--", mSet = "--:--";
-                    if (moonTimes.rise) {
-                        mRise = moonTimes.rise.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                    }
-                    if (moonTimes.set) {
-                        mSet = moonTimes.set.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                    }
+                    if (moonTimes.rise) { mRise = moonTimes.rise.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}); }
+                    if (moonTimes.set) { mSet = moonTimes.set.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}); }
                     document.getElementById('moonriseTime').innerText = mRise;
                     document.getElementById('moonsetTime').innerText = mSet;
-                } catch (err) {
-                    console.warn("Could not calculate moon times offline.", err);
-                }
+                } catch (err) { console.warn("Could not calculate moon times offline.", err); }
 
                 getMoonPhase();
 
@@ -871,7 +872,6 @@
                         const maxT = Math.round(daily.temperature_2m_max[i]);
                         const minT = Math.round(daily.temperature_2m_min[i]);
                         
-                        // INJECT MULTI-COLOR FORECAST ICONS
                         const dayIconHTML = getMultiColorIcon(daily.weather_code[i], 1);
                         const nightIconHTML = getMultiColorIcon(daily.weather_code[i], 0);
                         
@@ -904,11 +904,11 @@
                 let mainRunColor = "#ef4444";
                 let mainRunDesc = "Poor weather for running right now";
 
-                if (current.weather_code <= 3 && current.temperature_2m >= 5 && current.temperature_2m <= 32 && (currentAqi === null || currentAqi <= 100)) {
+                if (currentRain === 0 && effectiveCode <= 3 && current.temperature_2m >= 5 && current.temperature_2m <= 32 && (currentAqi === null || currentAqi <= 100)) {
                     mainRunStatus = "Good";
                     mainRunColor = "#10b981";
                     mainRunDesc = "Great weather for a run right now";
-                } else if (current.weather_code <= 61 && current.temperature_2m >= 0 && current.temperature_2m <= 38 && (currentAqi === null || currentAqi <= 200)) {
+                } else if (currentRain === 0 && effectiveCode <= 48 && current.temperature_2m >= 0 && current.temperature_2m <= 38 && (currentAqi === null || currentAqi <= 200)) {
                     mainRunStatus = "Fair";
                     mainRunColor = "#fbbf24";
                     mainRunDesc = "Decent conditions for a run";
@@ -943,16 +943,17 @@
                         
                         const hrTemp = hourly.temperature_2m[i];
                         const hrCode = hourly.weather_code[i];
+                        const hrRainChance = hourly.precipitation_probability[i] || 0;
                         
                         let iconClass = "fa-face-frown";
                         let txt = "Poor";
                         let color = "#ef4444";
 
-                        if (hrCode <= 3 && hrTemp >= 5 && hrTemp <= 32 && (currentAqi === null || currentAqi <= 100)) {
+                        if (hrRainChance < 20 && hrCode <= 3 && hrTemp >= 5 && hrTemp <= 32 && (currentAqi === null || currentAqi <= 100)) {
                             iconClass = "fa-face-smile";
                             txt = "Good";
                             color = "#10b981";
-                        } else if (hrCode <= 61 && hrTemp >= 0 && hrTemp <= 38 && (currentAqi === null || currentAqi <= 200)) {
+                        } else if (hrRainChance < 50 && hrCode <= 48 && hrTemp >= 0 && hrTemp <= 38 && (currentAqi === null || currentAqi <= 200)) {
                             iconClass = "fa-face-meh";
                             txt = "Fair";
                             color = "#fbbf24";
@@ -980,19 +981,22 @@
                     for(let i=startIndex; i<startIndex+24; i++) {
                         if(!hourly.time[i]) break; 
                         const timeStr = hourly.time[i].split('T')[1];
-                        const code = hourly.weather_code[i];
                         const currentHourTime = new Date(hourly.time[i]).getTime();
                         const nextHourTime = hourly.time[i+1] ? new Date(hourly.time[i+1]).getTime() : currentHourTime + 3600000;
                         
-                        // INJECT MULTI-COLOR HOURLY ICON
-                        const hIconHTML = getMultiColorIcon(code, hourly.is_day[i]);
+                        // Fix for Hourly Override if it's currently raining
+                        let hCode = hourly.weather_code[i];
+                        const hRainChance = hourly.precipitation_probability[i] || 0;
+                        if (hRainChance >= 50 && hCode <= 48) { hCode = 61; }
+
+                        const hIconHTML = getMultiColorIcon(hCode, hourly.is_day[i]);
 
                         hourlyList.innerHTML += `
                             <div class="hourly-card">
                                 <small>${timeStr}</small><br>
                                 <div style="font-size: 1.8rem; margin: 8px 0;">${hIconHTML}</div>
                                 <strong>${Math.round(hourly.temperature_2m[i])}°</strong><br>
-                                <small style="font-size:0.7rem">${weatherMap[code]?.split(' ')[0] || 'Cloudy'}</small>
+                                <small style="font-size:0.7rem; line-height: 1.2; display: inline-block; padding-top: 4px;">${weatherMap[hCode] || 'Cloudy'}</small>
                             </div>
                         `;
 
@@ -1051,9 +1055,7 @@
                 const data = await res.json();
                 if(data.length > 0) fetchWeather(data[0].lat, data[0].lon, data[0].display_name.split(',')[0]);
                 else document.getElementById('cityName').innerText = "City not found.";
-            } catch (e) {
-                document.getElementById('cityName').innerText = "Search failed.";
-            }
+            } catch (e) { document.getElementById('cityName').innerText = "Search failed."; }
         }
 
         window.onload = () => {
@@ -1062,7 +1064,6 @@
                 window.location.href = 'login.html';
                 return; 
             }
-
             initTheme(); 
             updateAuthUI(); 
             getUserLocation();
